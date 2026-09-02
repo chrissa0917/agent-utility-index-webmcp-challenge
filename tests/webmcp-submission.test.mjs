@@ -45,6 +45,11 @@ test("WebMCP demo route is preserved", () => {
 test("verified evidence requires a source URL", () => {
   assert.match(webmcpSource, /status === "VERIFIED" && !sourceUrl/);
   assert.match(webmcpSource, /SOURCE_REQUIRED/);
+  assert.match(webmcpSource, /VERIFICATION REJECTED/);
+  assert.match(webmcpSource, /No source = no VERIFIED/);
+  assert.match(webmcpSource, /current_cell_revision:\s*currentCellRevision/);
+  assert.match(webmcpSource, /evidence_revision:\s*currentCellRevision/);
+  assert.match(webmcpSource, /status === "VERIFIED" \? "EVIDENCE VERIFIED" : "EVIDENCE UPDATED"/);
 });
 
 test("public extraction excludes private service integrations", () => {
