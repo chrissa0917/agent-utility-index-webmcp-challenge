@@ -261,7 +261,20 @@ export function AgentResearchBoardWebMcp() {
           if (!["VERIFIED", "PARTIAL", "MISSING", "FAILED"].includes(status)) return { error: "INVALID_STATUS" };
           const sourceUrl = typeof input.source_url === "string" && input.source_url.trim() ? input.source_url.trim() : undefined;
           if (status === "VERIFIED" && !sourceUrl) {
-            return { error: "SOURCE_REQUIRED", message: "No source = no VERIFIED. Supply a source URL or use PARTIAL/MISSING." };
+            const next = withActivity(
+              board,
+              "VERIFICATION REJECTED",
+              `${candidate.name}: ${criterion.label} - No source = no VERIFIED`
+            );
+            return {
+              ...saveBoard(next),
+              error: "SOURCE_REQUIRED",
+              current_revision: next.revision,
+              current_cell_revision: currentCellRevision,
+              evidence_revision: currentCellRevision,
+              message: "No source = no VERIFIED. Supply a source URL or use PARTIAL/MISSING.",
+              workspace_url: workspaceUrl()
+            };
           }
 
           const now = new Date().toISOString();
@@ -284,7 +297,11 @@ export function AgentResearchBoardWebMcp() {
             updatedRevision: candidate.updatedRevision
           };
           const candidates = board.candidates.map((item) => item.id === candidate.id ? updated : item);
-          const next = withActivity({ ...board, candidates }, "EVIDENCE UPDATED", `${candidate.name}: ${criterion.label} → ${status}`);
+          const next = withActivity(
+            { ...board, candidates },
+            status === "VERIFIED" ? "EVIDENCE VERIFIED" : "EVIDENCE UPDATED",
+            `${candidate.name}: ${criterion.label} → ${status}`
+          );
           return { ...saveBoard(next), evidence_revision: currentCellRevision + 1, workspace_url: workspaceUrl() };
         }
       },
